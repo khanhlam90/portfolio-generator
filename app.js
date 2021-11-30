@@ -1,4 +1,4 @@
-const profileDataArgs = process.argv.slice(2, process.argv.length);
+const profileDataArgs = process.argv.slice(2);
 //console.log(profileDataArgs);
 
 const printProfileData = profileDataArr => {
