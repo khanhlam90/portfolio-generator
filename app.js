@@ -1,13 +1,12 @@
-//9.2 - adding the file system const, require statement allows the app.js file to access the fs module's functions through the fs assignment.
-const fs = require('fs');
-
-//9.3 newly added - after comment out all current codes
 const inquirer = require ('inquirer');
 
 //9.2.6 because we added the module.exports statement at the end of the page-template.js file 
 //9.2.6 (with module.exports set to our generatePage() function), 
 //9.2.6 we can now use the require statement to include generatePage() at the top of the app.js file.
 const generatePage = require('./src/page-template.js');
+
+// since we have the asynchronous js file generate-site.js, we dont need fs call, instead, we use the following:
+const { writeFile, copyFile } = require('./utils/generate-site.js');
 
 const promptUser = () => {
   return inquirer.prompt([
@@ -138,87 +137,41 @@ Add a New Project
     }
   })
 };
+
 promptUser()
   .then(promptProject)
   .then(portfolioData => {
-    //console.log(portfolioData);
-    const pageHTML = generatePage(portfolioData);
-
-    fs.writeFile('./index.html', pageHTML, err => {
-      if (err) throw new Error(err);
-
-      console.log('Page created! Check out index.html in this directory to see it!');
-    });
+    return generatePage(portfolioData);
+  })
+  .then(pageHTML => {
+    return writeFile(pageHTML);
+  })
+  .then(writeFileResponse => {
+    console.log(writeFileResponse);
+    return copyFile();
+  })
+  .then(copyFileResponse => {
+    console.log(copyFileResponse);
+  })
+  .catch(err => {
+    console.log(err);
   });
 
+  // So let's reiterate the flow this function will now have:
 
-
-          //lesson 9.1 - to capture the input
-          //const profileDataArgs = process.argv.slice(2);
-          //console.log(profileDataArgs);
-
-          //lesson 9.2 - to receive input and display data dynamically and feed data into the generatePage() fxn, 
-          //and holds the user command-line arguments.
-          //const profileDataArgs = process.argv.slice(2); //removed in 9.3 lesson as now we use npm inquirer
-
-          // to extract those arguments and store them into distinct variables. One way to do this is to use the array index
-          //const name = profileDataArgs[0];
-          //const github = profileDataArgs[1]; //then edit the console log to print the return of generatePage() - console.log(generatePage(name, github));
-          //shorter version
-          //const [name, github] = profileDataArgs;//removed in 9.3 lesson as now we use npm inquirer
-
-//9.3 lesson using npm inquirer
-//const pageHTML = generatePage(name, github);
-
-              //lesson 9.1
-              // const printProfileData = profileDataArr => {
-              //     // This...
-              //     for (let i = 0; i < profileDataArr.length; i += 1) {
-              //       console.log(profileDataArr[i]);
-              //     }
-                
-              //     console.log('================');
-                
-              //     // Is the same as this...
-              //     // profileDataArr.forEach((profileItem) => {
-              //     //   console.log(profileItem)
-              //     // });
-              //     // Is the same as this...
-              //     profileDataArr.forEach(profileItem => console.log(profileItem));
-              //   };
-
-              //   printProfileData(profileDataArgs);
-
-              //lesson 9.2
-              //hard coded way
-              // const generatePage = () => 'Name: KHANH, Github: khanhlam90';
-              // console.log(generatePage());
-
-              //Template literals - make it dynamic - embed js expressions into the string, enclosed by backtick (`)
-              // const generatePage = (userName, githubName) => `Name: ${userName}, Github: ${githubName}`;
-              // console.log(generatePage('khanhlam', 'khanhlam90'));
-
-              //or instead, use Multi-line strings - added carriage returns manually within the template literal - lines breaks in the code
-              // const generatePage = (userName, githubName) => {
-              //   return `
-              //     Name: ${userName}
-              //     GitHub: ${githubName}
-              //   `;
-              // };
-              //console.log(generatePage('khanhlam', 'khanhlam90')); //replace with dynamic fxn
-              //console.log(generatePage(name, github));
-
-              //9.2 file system - first arg = file name, 2nd srg = data that will write onto the file (template literal), 3rd arg=callback fxn used for error handling
-              //removed generatePage() with page HTML in 9.3 lesson as now we use npm inquirer
-              // fs.writeFile('./index.html', generatePage(name, github), err => {
-              //   if (err) throw new Error(err);
-
-              //   console.log('Portfolio complete! Check out index.html to see the output!');
-              // });
-
-//lesson 9.3 - npm inquirer
-// fs.writeFile('./index.html', pageHTML, err => {
-//   if (err) throw err;
-
-//   console.log('Portfolio complete! Check out index.html to see the output!');
-// });
+  // We start by asking the user for their information with Inquirer prompts; this returns all of the data as an object in a Promise.
+  
+  // The promptProject() function captures the returning data from promptUser() and we recursively call promptProject() for as many projects 
+  //as the user wants to add. Each project will be pushed into a projects array in the collection of portfolio information, and when we're done, 
+  //the final set of data is returned to the next .then().
+  
+  // The finished portfolio data object is returned as portfolioData and sent into the generatePage() function, 
+  //which will return the finished HTML template code into pageHTML.
+  
+  // We pass pageHTML into the newly created writeFile() function, which returns a Promise. 
+  //This is why we use return here, so the Promise is returned into the next .then() method.
+  
+  // Upon a successful file creation, we take the writeFileResponse object provided by the writeFile() function's resolve() execution to log it, 
+  //and then we return copyFile().
+  
+  // The Promise returned by copyFile() then lets us know if the CSS file was copied correctly, and if so, we're all done!
