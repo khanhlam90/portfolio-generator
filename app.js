@@ -1,5 +1,13 @@
+//9.2 - adding the file system const, require statement allows the app.js file to access the fs module's functions through the fs assignment.
+const fs = require('fs');
+
 //9.3 newly added - after comment out all current codes
 const inquirer = require ('inquirer');
+
+//9.2.6 because we added the module.exports statement at the end of the page-template.js file 
+//9.2.6 (with module.exports set to our generatePage() function), 
+//9.2.6 we can now use the require statement to include generatePage() at the top of the app.js file.
+const generatePage = require('./src/page-template.js');
 
 const promptUser = () => {
   return inquirer.prompt([
@@ -133,7 +141,14 @@ Add a New Project
 promptUser()
   .then(promptProject)
   .then(portfolioData => {
-    console.log(portfolioData);
+    //console.log(portfolioData);
+    const pageHTML = generatePage(portfolioData);
+
+    fs.writeFile('./index.html', pageHTML, err => {
+      if (err) throw new Error(err);
+
+      console.log('Page created! Check out index.html in this directory to see it!');
+    });
   });
 
 
@@ -141,14 +156,6 @@ promptUser()
           //lesson 9.1 - to capture the input
           //const profileDataArgs = process.argv.slice(2);
           //console.log(profileDataArgs);
-
-//9.2 - adding the file system const, require statement allows the app.js file to access the fs module's functions through the fs assignment.
-//const fs = require('fs');
-
-//9.2.6 because we added the module.exports statement at the end of the page-template.js file 
-//9.2.6 (with module.exports set to our generatePage() function), 
-//9.2.6 we can now use the require statement to include generatePage() at the top of the app.js file.
-//const generatePage = require('./src/page-template.js');
 
           //lesson 9.2 - to receive input and display data dynamically and feed data into the generatePage() fxn, 
           //and holds the user command-line arguments.
